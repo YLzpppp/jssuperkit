@@ -35,7 +35,7 @@ const JSFlatList = React.forwardRef((props: any, ref: any) => {
             let _statusBarHeight = isStatusBarTranslucent ? 0 : statusBarHeight;
             return headerContentHeight - navigationBarHeight - tabBarHeight + _statusBarHeight;
         }
-        return headerContentHeight - navigationBarHeight - tabBarHeight + statusBarHeight;
+        return headerContentHeight - navigationBarHeight - tabBarHeight ;
     },[isStatusBarTranslucent,headerContentHeight,tabBarHeight,statusBarHeight,navigationBarHeight]);
 
     const listContainerHeightRef = useRef(0);
@@ -100,14 +100,17 @@ const JSFlatList = React.forwardRef((props: any, ref: any) => {
      * 当列表滚动停止的时候触发该事件，这里主要用于同步各个列表滚动偏移
      */
     const onMomentumScrollEnd = (e) => {
-        let offsetY = e.nativeEvent.contentOffset.y;
-        sharedScrollOffset.setValue(offsetY);
-
-        //当前列表为用户正在交互的列表
+        sharedScrollOffset.setValue(e.nativeEvent.contentOffset.y);
         if(isMeTheCurrentPage){
             dispatchScrollSynchronization(sharedScrollOffset._value, sharedScrollOffset._value <= stopEdgeValue, true )
         }
     };
+    const onScrollEndDrag = (e) => {
+        sharedScrollOffset.setValue(e.nativeEvent.contentOffset.y);
+        if(isMeTheCurrentPage){
+            dispatchScrollSynchronization(sharedScrollOffset._value, sharedScrollOffset._value <= stopEdgeValue, true )
+        }
+    }
 
     const onScroll = Animated.event(
         [{ nativeEvent: { contentOffset: { y: sharedScrollOffset } } }],
@@ -155,7 +158,8 @@ const JSFlatList = React.forwardRef((props: any, ref: any) => {
             contentContainerStyle={{ paddingTop: headerContentHeight, paddingBottom: scrollCompensationValue }}
             onScroll={onScroll}
             onMomentumScrollEnd={onMomentumScrollEnd}
-            scrollEventThrottle={0}
+            onScrollEndDrag={onScrollEndDrag}
+            scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
         />
     )
